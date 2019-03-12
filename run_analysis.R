@@ -4,24 +4,32 @@
 
 # Load libraries to be used
 library(plyr)
+library(readr)
 
 # Create folder for data, if it doesn't exist
 if (!file.exists("data")) {
     dir.create("data")
 }
 
-# Create folder for tidydata, if it doesn't exist
-if (!file.exists("tidydata")) {
-    dir.create("tidydata")
-}
-
 # Set working directory to data folder
 setwd("./data")
+working_dir <- getwd()
+tidy_dir <- paste(working_dir, "/tidydata", sep = "")
 
-# Get data and unzip it
-download.file("https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip", "UCI_HAR_Dataset.zip")
-unzip("UCI_HAR_Dataset.zip")
+# Create folder for tidydata, if it doesn't exist
+if (!file.exists(tidy_dir)) {
+    dir.create(tidy_dir)
+}
 
+# Check if source data has been downloaded, else get it
+if (!file.exists("UCI_HAR_Dataset.zip")) {
+    # Get data and unzip it
+    message("Source data file not found, begining download...")
+    download.file("https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip", "UCI_HAR_Dataset.zip")
+    message("Source data file downloaded, begining unzip...")
+    unzip("UCI_HAR_Dataset.zip")
+    message("Source data file unzipped.")
+}
 
 # Load list of all features
 features <- read.table(file = "UCI HAR Dataset/features.txt", stringsAsFactors = TRUE)[, 2]
@@ -37,12 +45,12 @@ colnames(subject_train) <- "subject" # Give a meaningful name to the variable
 
 # Loads all activity train data
 y_train <- read.table(file = "UCI HAR Dataset/train/y_train.txt", stringsAsFactors = TRUE)
-colnames(yt) <- "activity_id" # Give a meaningful name to the variable
+colnames(y_train) <- "activity_id" # Give a meaningful name to the variable
 
 # Loads all train measurements data
 x_train <- read.table(file = "UCI HAR Dataset/train/X_train.txt", colClasses = rep("numeric", 561), stringsAsFactors = FALSE)
 # Give meaningful names to the variables from the features file
-colnames(xt) <- read.table(file = "UCI HAR Dataset/features.txt", stringsAsFactors = TRUE)[, 2]
+colnames(x_train) <- read.table(file = "UCI HAR Dataset/features.txt", stringsAsFactors = TRUE)[, 2]
 
 # Merges subject, with activity and measurement observations but only those that correspond to "mean()" or "std()" (standard deviation)
 train <- cbind(subject_train, y_train, x_train[, grepl("mean\\(\\)", names(x_train)) | grepl("std\\(\\)", names(x_train))])
@@ -72,46 +80,6 @@ test$activity_id <- mapvalues(test$activity_id, activity_labels$id, as.character
 # Merges the training and the test sets to create one data set.
 merged_data <- rbind(train, test)
 # Write to tidydata folder
-write_csv(merged_data, "tidydata/merged_data.csv")
-
-
-
-
-# Create a list of all train files
-filelist <- dir(recursive = TRUE)
-filelist <- dir(recursive = TRUE, pattern = "*train*")
-trainfiles <- filelist[grep("train", filelist, ignore.case = TRUE)]
-#trainfiles <- dir(path = "./UCI HAR Dataset", recursive = TRUE)
-
-# For each train file, locate its corresponding test file and merge them
-for (fname in trainfiles) {
-    # Get test file name from train
-    testfile <- gsub("train", "test", fname)
-    
-    if (file.exists(testfile)) {
-        # Read test file
-        traindata <- read.table(file = testfile, colClasses = rep("numeric", 561), stringsAsFactors = FALSE)
-        
-        # Set the names of the variables in the dataframe
-        colnames(traindata) <- features
-    }
-}
-
-
-
-st <- read.table(file = "UCI HAR Dataset/train/subject_train.txt", stringsAsFactors = TRUE)
-colnames(st) <- "subject"
-
-yt <- read.table(file = "UCI HAR Dataset/train/y_train.txt", stringsAsFactors = TRUE)
-colnames(yt) <- "activity_id"
-
-xt <- read.table(file = "UCI HAR Dataset/train/x_train.txt", colClasses = rep("numeric", 561), stringsAsFactors = FALSE)
-colnames(xt) <- read.table(file = "UCI HAR Dataset/features.txt", stringsAsFactors = TRUE)[, 2]
-
-xt[, grepl("mean", names(xt)) | grepl("std", names(xt))]
-
-train <- cbind(st, yt, xt[, grepl("mean\\(", names(xt)) | grepl("std\\(", names(xt))])
-train$activity_id <- mapvalues(train$activity_id, activity_labels$id, as.character(activity_labels$activity))
-
+write_csv(merged_data, paste(tidy_dir, "/merged_data.csv", sep = ""))
 
 
