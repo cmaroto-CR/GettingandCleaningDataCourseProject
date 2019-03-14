@@ -3,7 +3,7 @@
 ## March 2019
 
 # Load libraries to be used
-library(plyr)
+library(dplyr)
 library(readr)
 
 # Create folder for data, if it doesn't exist
@@ -22,7 +22,9 @@ if (!file.exists(tidy_dir)) {
 }
 
 # Check if source data has been downloaded, else get it
-if (!file.exists("UCI_HAR_Dataset.zip")) {
+# For some unknown reason to me, !file.exists didn't work with the file as it did for folders
+# so comparing output to TRUE instead
+if (file.exists("UCI_HAR_Dataset.zip") == TRUE) {
     # Get data and unzip it
     message("Source data file not found, begining download...")
     download.file("https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip", "UCI_HAR_Dataset.zip")
@@ -50,7 +52,7 @@ colnames(y_train) <- "activity_id" # Give a meaningful name to the variable
 # Loads all train measurements data
 x_train <- read.table(file = "UCI HAR Dataset/train/X_train.txt", colClasses = rep("numeric", 561), stringsAsFactors = FALSE)
 # Give meaningful names to the variables from the features file
-colnames(x_train) <- read.table(file = "UCI HAR Dataset/features.txt", stringsAsFactors = TRUE)[, 2]
+colnames(x_train) <- features
 
 # Merges subject, with activity and measurement observations but only those that correspond to "mean()" or "std()" (standard deviation)
 train <- cbind(subject_train, y_train, x_train[, grepl("mean\\(\\)", names(x_train)) | grepl("std\\(\\)", names(x_train))])
@@ -82,4 +84,7 @@ merged_data <- rbind(train, test)
 # Write to tidydata folder
 write_csv(merged_data, paste(tidy_dir, "/merged_data.csv", sep = ""))
 
-
+# Groups data by subject and activity, calculating the average (mean) of each mean() or std() column
+avg_merged_data <- merged_data %>% group_by(subject, activity_id) %>% summarise_at(vars(contains("mean"), contains("std")), mean, na.rm=TRUE)
+# Write to tidydata folder
+write_csv(avg_merged_data, paste(tidy_dir, "/avg_merged_data.csv", sep = ""))
