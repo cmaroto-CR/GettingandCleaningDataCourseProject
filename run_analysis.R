@@ -81,10 +81,14 @@ test$activity_id <- mapvalues(test$activity_id, activity_labels$id, as.character
 
 # Merges the training and the test sets to create one data set.
 merged_data <- rbind(train, test)
-# Write to tidydata folder
-write_csv(merged_data, paste(tidy_dir, "/merged_data.csv", sep = ""))
+# Write to tidydata folder as text per the project instructions
+write.table(merged_data, paste(tidy_dir, "/merged_data.txt", sep = ""), row.name=FALSE, sep = " ")
+# Uncomment the following line to save the file as a comma-separated-values instead of text
+# write_csv(merged_data, paste(tidy_dir, "/merged_data.csv", sep = ""))
 
 # Groups data by subject and activity, calculating the average (mean) of each mean() or std() column
 avg_merged_data <- merged_data %>% group_by(subject, activity_id) %>% summarise_at(vars(contains("mean"), contains("std")), mean, na.rm=TRUE)
-# Write to tidydata folder
-write_csv(avg_merged_data, paste(tidy_dir, "/avg_merged_data.csv", sep = ""))
+# Write to tidydata folder as text per the project instructions
+write.table(avg_merged_data, paste(tidy_dir, "/avg_merged_data.txt", sep = ""), row.name=FALSE, sep = " ")
+# Uncomment the following line to save the file as a comma-separated-values instead of text
+# write_csv(avg_merged_data, paste(tidy_dir, "/avg_merged_data.csv", sep = ""))
