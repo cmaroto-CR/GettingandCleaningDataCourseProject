@@ -3,7 +3,7 @@
 ## March 2019
 
 # Load libraries to be used
-library(dplyr)
+library(plyr)
 library(readr)
 
 # Create folder for data, if it doesn't exist
