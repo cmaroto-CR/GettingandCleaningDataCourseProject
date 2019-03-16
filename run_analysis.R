@@ -24,7 +24,7 @@ if (!file.exists(tidy_dir)) {
 # Check if source data has been downloaded, else get it
 # For some unknown reason to me, !file.exists didn't work with the file as it did for folders
 # so comparing output to TRUE instead
-if (file.exists("UCI_HAR_Dataset.zip") == TRUE) {
+if (file.exists(paste(working_dir, "/UCI_HAR_Dataset.zip", sep = "")) == TRUE) {
     # Get data and unzip it
     message("Source data file not found, begining download...")
     download.file("https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip", "UCI_HAR_Dataset.zip")
